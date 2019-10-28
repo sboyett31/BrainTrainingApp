@@ -1,6 +1,6 @@
 
 local composer = require( "composer" )
-
+local json = require("json")
 local scene = composer.newScene()
 
 local username = ""
@@ -27,6 +27,39 @@ local options =
 end
 
 local function gotoHighScores()
+	local highscores = {
+		{ place='1st', username='--', score='--'},
+		{ place='2nd', username='--', score='--'},
+		{ place='3rd', username='--', score='--'},
+		{ place='4th', username='--', score='--'},
+		{ place='5th', username='--', score='--'},
+	}
+
+
+	function saveTable( t, filename)
+	 
+	    -- Path for the file to write
+	    local path = system.pathForFile( filename, system.DocumentsDirectory )
+	 
+	    -- Open the file handle
+	    local file, errorString = io.open( path, "w" )
+	 
+	    if not file then
+	        -- Error occurred; output the cause
+	        print( "File error: " .. errorString )
+	        return false
+	    else
+	        -- Write encoded JSON data to file
+	        print("file opened")
+	        file:write( json.encode( t ) )
+	        print("json written")
+	        -- Close the file handle
+	        io.close( file )
+	        return true
+	    end
+	end
+
+	saveTable(highscores, "highscores.json")
 	local options =
 		{
 		    effect = "crossFade",
@@ -85,7 +118,6 @@ function scene:create( event )
 	unametext.x = xCenter
 	unametext.y = yCenter
 	unametext.isEditable = true
-	unametext.hasBackground = false
 	sceneGroup:insert(1, unametext)
 
 	local playButton = display.newText( sceneGroup, "Play", display.contentCenterX, display.contentCenterY+50, native.systemFont, 44 )

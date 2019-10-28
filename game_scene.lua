@@ -7,12 +7,45 @@
 -- This file contains code that describes the game scene for BrainTraner
 
 local composer = require("composer")
+local json = require("json")
 
 local game_scene = composer.newScene()
 
 -- state variables updated and passed to scenes --
 local username = "bob"
 local score = 0
+
+-- local highscores = {
+-- 	{ place='1st', username='--', score='--'},
+-- 	{ place='2nd', username='--', score='--'},
+-- 	{ place='3rd', username='--', score='--'},
+-- 	{ place='4th', username='--', score='--'},
+-- 	{ place='5th', username='--', score='--'},
+-- }
+
+
+-- function saveTable( t, filename)
+ 
+--     -- Path for the file to write
+--     local path = system.pathForFile( filename, system.DocumentsDirectory )
+ 
+--     -- Open the file handle
+--     local file, errorString = io.open( path, "w" )
+ 
+--     if not file then
+--         -- Error occurred; output the cause
+--         print( "File error: " .. errorString )
+--         return false
+--     else
+--         -- Write encoded JSON data to file
+--         file:write( json.encode( t ) )
+--         -- Close the file handle
+--         io.close( file )
+--         return true
+--     end
+-- end
+
+-- saveTable(highscores, "highscores.json")
 
 -- game specific variables -- 
 local rects = {}
@@ -73,6 +106,15 @@ local function removeRects()
 	end
 end
 
+local function removeNums()
+	for k, v in pairs(nums) do 
+		if v ~= nil then
+			v:removeSelf()
+			v = nil
+		end
+	end
+end
+
 local function removeRemainingRects(click_num)
 	for i=click_num, numObjects, 1 do
 		rects[i]:removeSelf()
@@ -80,41 +122,58 @@ local function removeRemainingRects(click_num)
 	end
 end
 
+
+local function roundWin()
+	removeNums()
+	display.remove(roundText)
+	display.remove(scoreText)
+	local checkMark = display.newImageRect( game_scene.view, "Correct.png", 320, 480 )
+	checkMark.x = display.contentCenterX
+	checkMark.y = display.contentCenterY	
+end
+
+local function roundLoss()
+	removeNums()
+	display.remove(roundText)
+	display.remove(scoreText)
+	local X = display.newImageRect( game_scene.view, "wrong.png", 320, 480 )
+	X.x = display.contentCenterX
+	X.y = display.contentCenterY
+end
+
+
 local function check_order(event) 
-	print("click function reached.. index is: "..event.target.index)
 	if event.target.index == click_num then
 		event.target:removeSelf()
 		event.target = nil
-		print("click_num is: ".. click_num)
-		print("game_scene.round is"..round)
 		if click_num == numObjects then
 			score = score + numObjects
+			roundWin()
 			nextLevel = function() gotoGame(round+1, numObjects+1, score) end
-			timer.performWithDelay(500, nextLevel)
+			timer.performWithDelay(1500, nextLevel)
 			-- gotoGame(round + 1, numObjects + 1, score)
 		else 
 			click_num = click_num + 1
 		end
 	elseif event.target.index ~= click_num then
 		removeRemainingRects(click_num)
-		gotoGame(round + 1, numObjects - 1, score)
+		-- gotoGame(round + 1, numObjects - 1, score)
+		roundLoss()
+		nextLevel = function() gotoGame(round+1, numObjects-1, score) end
+		timer.performWithDelay(1500, nextLevel)
 	end
 end
 
 
-local function enableClick() 
-	for k, v in pairs(rects) do 
-		rects[k]:addEventListener("tap", check_order)
-		print("event listener added")
-	end
-end
-
+local rectWidth = 80
+local rectHeight = 60
 
 local function showRects()
 	local index = 1
 	for x, y in pairs(pos) do
-		rect = display.newRect(x, y, 80, 60)
+		rect = display.newRect(x, y, rectWidth, rectHeight)
 		rect.index = index
+		rect:addEventListener("tap", check_order)
 		table.insert(rects, rect)
 		index = index + 1
 	end
@@ -137,8 +196,8 @@ local function divideScreen(numObjects)
 	local rows = math.ceil(numObjects/2)
 	local cols = 2
 	local squares = rows*cols
-	top = yMax 
-	local yIncr = yMax/rows
+	local top = yMin + 75 
+	local yIncr = (yMax - top)/rows
 	local xIncr = xMax/2
 	local count = 1
 	local row = 1
@@ -146,10 +205,9 @@ local function divideScreen(numObjects)
 
 	for k, v in pairs(grid) do
 		v['xMin'] = xMin + (xIncr * (col-1))
-		v['yMin'] = yMin + (yIncr * (row-1))
+		v['yMin'] = top + (yIncr * (row-1))
 		v['xMax'] = xMin + (xIncr * col) 
-		v['yMax'] = yMin + (yIncr * row)
-		print("count is: "..count)
+		v['yMax'] = top + (yIncr * row)
 		row = row + 1
 		if row == rows+1 then
 			row = 1
@@ -157,11 +215,6 @@ local function divideScreen(numObjects)
 		end
 	end
 
-	for k, v in pairs(grid) do
-		for k2, v2 in pairs(v) do 
-			print("v2 is: "..v2)
-		end
-	end
 	return grid
 end
 
@@ -172,24 +225,25 @@ local function startGame()
 	local rect = nil
 	display.remove(countdown)
 	countdown:removeSelf()
-	display.newText( sceneGroup, "Round "..round, xCenter, yMin, native.systemFont, 45)
-	display.newText( sceneGroup, "Score: "..score, xCenter, yMin + 30, native.systemFont, 16)
+	roundText = display.newText( sceneGroup, "Round "..round, xCenter, yMin, native.systemFont, 45)
+	scoreText = display.newText( sceneGroup, "Score: "..score, xCenter, yMin + 30, native.systemFont, 16)
 	grid = divideScreen(numObjects)
 	for k, v in pairs(grid) do
 		-- create positions for objects
-	    x = math.random(v['xMin'], v['xMax'])
-    	y = math.random(v['yMin'], v['yMax'])
-    	print("['xmin'] is: "..v['xMin'])
-    	print("['xmax'] is: "..v['xMax'])
-    	print("['ymin'] is: "..v['yMin'])
-    	print("['ymax'] is: "..v['yMax'])
-
-    	print("x,y :"..x..","..y)
+		-- DEBUG
+		-- print("xMin is: "..v["xMin"])
+		-- print("xMax is: "..v["xMax"])
+		-- print("xleft is: "..(v['xMin'] +(rectWidth/2)))
+		-- print("xRight is: "..(v['xMax'] - (rectWidth/2)))
+		-- print("ytop is: "..(v['yMin'] + (rectHeight/2)))
+		-- print("yLow is: "..(v['yMax'] - (rectHeight/2)))
+	    x = math.random(v['xMin'] + (rectWidth/2), v['xMax'] - (rectWidth/2))
+    	y = math.random(v['yMin'] + (rectHeight/2), v['yMax'] - (rectHeight/2))
 		pos[x] = y
 	end
 	showNums(sceneGroup)
 	timer.performWithDelay(700, showRects)
-	timer.performWithDelay(710, enableClick)
+	-- timer.performWithDelay(710, enableClick)
 end
 
 local function countDown()
@@ -208,7 +262,7 @@ function game_scene:create( event )
 	numObjects = event.params['numObjects']
 	score = event.params['score']
 
-	if round <= 10 then
+	if round <= 2 then
 		countdown = display.newText( sceneGroup, ""..countDownText, xCenter, yCenter, native.systemFont, 45)
 		timer.performWithDelay(1000, countDown, 3)
 	end
@@ -225,7 +279,7 @@ function game_scene:show( event )
 		-- code here runs when the scene is still off screen (but about to come on screen)
 	elseif ( phase == "did" ) then
 		-- code here runs when the scene is entirely on screen
-		if round == 11 then
+		if round == 3 then
 			gotoResults()
 		end
 	end
