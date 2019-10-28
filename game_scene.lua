@@ -12,40 +12,8 @@ local json = require("json")
 local game_scene = composer.newScene()
 
 -- state variables updated and passed to scenes --
-local username = "bob"
+local username = ""
 local score = 0
-
-local highscores = {
-	{ place='1st', username='--', score='--'},
-	{ place='2nd', username='--', score='--'},
-	{ place='3rd', username='--', score='--'},
-	{ place='4th', username='--', score='--'},
-	{ place='5th', username='--', score='--'},
-}
-
-
-function saveTable( t, filename)
- 
-    -- Path for the file to write
-    local path = system.pathForFile( filename, system.DocumentsDirectory )
- 
-    -- Open the file handle
-    local file, errorString = io.open( path, "w" )
- 
-    if not file then
-        -- Error occurred; output the cause
-        print( "File error: " .. errorString )
-        return false
-    else
-        -- Write encoded JSON data to file
-        file:write( json.encode( t ) )
-        -- Close the file handle
-        io.close( file )
-        return true
-    end
-end
-
-saveTable(highscores, "highscores.json")
 
 -- game specific variables -- 
 local rects = {}
@@ -67,13 +35,12 @@ print("xMax: "..xMax)
 print("yMax: "..yMax)
 -- Functions to transition scenes -- 
 local function gotoGame(lvl, num, score)
-	print("gotogame reaced round is: "..round)
 	local options =
 		{
 		    effect = "slideDown",
 		    time = 1200,
 		    params = {
-		        uname = username,
+		        username = username,
 		        round = lvl,
 		        numObjects = num,
 		        score = score,
@@ -89,7 +56,7 @@ local function gotoResults()
 		    effect = "crossFade",
 		    time = 1200,
 		    params = {
-		        uname = username,
+		        username = username,
 		     	score = score
 		    }
 		}
@@ -261,6 +228,7 @@ function game_scene:create( event )
 	round = event.params['round']
 	numObjects = event.params['numObjects']
 	score = event.params['score']
+	username = event.params['username']
 
 	if round <= 2 then
 		countdown = display.newText( sceneGroup, ""..countDownText, xCenter, yCenter, native.systemFont, 45)

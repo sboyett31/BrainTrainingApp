@@ -83,6 +83,7 @@ end
 
 local function update_highscores(hs, score)
 	temphs = {}
+	tempunames = {}
 	local updated = 0
 	print("score is: "..score)
 	for i=1, 5, 1 do 
@@ -95,12 +96,16 @@ local function update_highscores(hs, score)
 				print("score inside if: "..score)
 				if score > tonumber(hs[i]["score"]) then
 					temphs[i] = score
-					tempunames[i] = username
+					if hs[i]["username"] ~= "--" then
+						tempunames[i] = username
+					else
+						tempunames[i] = "--"
+					end
 					updated = 1
 				end
 			else
 				temphs[i] = score
-				tempuanmes[i] = username
+				tempunames[i] = username
 				updated = 1
 			end
 		end
@@ -150,12 +155,12 @@ function result_scene:create( event )
 
 	local score = event.params['score']
 	username = event.params['username']
-	
+	print("username is: "..username)
 	if score ~= nil then
 		-- game just ended
 		print("score is: "..score)
-		game_over = display.newText("GAME OVER", xCenter, yCenter, native.systemFontBold, 30) 
-		final_score = display.newText("Final Score: "..event.params['score'], xCenter, yCenter + 50, native.systemFontBold, 24)
+		game_over = display.newText(sceneGroup, "GAME OVER", xCenter, yCenter, native.systemFontBold, 30) 
+		final_score = display.newText(sceneGroup, "Final Score: "..event.params['score'], xCenter, yCenter + 50, native.systemFontBold, 24)
 		local highscores = function() return show_high_scores(sceneGroup, score) end
 		timer.performWithDelay(3000, highscores)
 	else

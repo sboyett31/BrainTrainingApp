@@ -11,12 +11,13 @@ local round = 1
 -- -----------------------------------------------------------------------------------
 
 local function gotoGame()
+print("user name is: "..username)
 local options =
 	{
 	    effect = "slideDown",
 	    time = 500,
 	    params = {
-	        uname = username,
+	        username = username,
 	        round = round,
 	        numObjects = 3,
 	        score = 0,
@@ -26,40 +27,61 @@ local options =
 	composer.gotoScene( "game_scene", options )
 end
 
+function loadTable( filename )
+
+    -- Path for the file to read
+    local docs = system.DocumentsDirectory
+    local path = system.pathForFile( filename, docs )
+ 
+    -- Open the file handle
+    local file, errorString = io.open( path, "r" )
+ 
+    if not file then
+        -- Error occurred; output the cause
+        return false
+    else
+        -- Read data from file
+        print("opened")
+        local contents = file:read( "*a" )
+        print ("read .. "..contents)
+        -- Decode JSON data into Lua table
+        local t = json.decode( contents )
+        -- Close the file handle
+        io.close( file )
+        -- Return table
+        return t
+    end
+end
+
+function saveTable( t, filename)
+ 
+    -- Path for the file to write
+    local path = system.pathForFile( filename, system.DocumentsDirectory )
+ 
+    -- Open the file handle
+    local file, errorString = io.open( path, "w" )
+ 
+    if not file then
+        -- Error occurred; output the cause
+        print( "File error: " .. errorString )
+        return false
+    else
+        -- Write encoded JSON data to file
+        print("file opened")
+        file:write( json.encode( t ) )
+        print("json written")
+        -- Close the file handle
+        io.close( file )
+        return true
+    end
+end
+
+local function manageHighScores()
+
+end
+
 local function gotoHighScores()
-	local highscores = {
-		{ place='1st', username='--', score='--'},
-		{ place='2nd', username='--', score='--'},
-		{ place='3rd', username='--', score='--'},
-		{ place='4th', username='--', score='--'},
-		{ place='5th', username='--', score='--'},
-	}
 
-
-	function saveTable( t, filename)
-	 
-	    -- Path for the file to write
-	    local path = system.pathForFile( filename, system.DocumentsDirectory )
-	 
-	    -- Open the file handle
-	    local file, errorString = io.open( path, "w" )
-	 
-	    if not file then
-	        -- Error occurred; output the cause
-	        print( "File error: " .. errorString )
-	        return false
-	    else
-	        -- Write encoded JSON data to file
-	        print("file opened")
-	        file:write( json.encode( t ) )
-	        print("json written")
-	        -- Close the file handle
-	        io.close( file )
-	        return true
-	    end
-	end
-
-	saveTable(highscores, "highscores.json")
 	local options =
 		{
 		    effect = "crossFade",
@@ -100,9 +122,25 @@ local yCenter = display.contentCenterY
 
 -- create()
 function scene:create( event )
-
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
+
+	-- manage highscores table --
+	highscores = loadTable("highscores.json")
+	if highscores == false then
+		-- No highscores file found, initialize
+		 highscores = {
+			{ place='1st', username='--', score='--'},
+			{ place='2nd', username='--', score='--'},
+			{ place='3rd', username='--', score='--'},
+			{ place='4th', username='--', score='--'},
+			{ place='5th', username='--', score='--'},
+		}
+	end
+
+	-- save highscores to "highscores.json"
+	saveTable(highscores, "highscores.json")
+
 
 	local background = display.newImageRect( sceneGroup, "background.png", 320, 480 )
 	background.x = display.contentCenterX
