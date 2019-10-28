@@ -16,21 +16,32 @@ local yMax = display.contentHeight
 local xMin = 0
 local yMin = 0
 local username = ""
+local new_hs = 0
 local json = require("json")
+
+local function gotoMenu()
+	local options = 
+	{
+		effect = "fade",
+		time   = 500,
+	}
+	composer.removeScene("result_scene")
+	composer.gotoScene("title_scene", options)
+end
 
 local function gotoGame()
 local options =
 	{
 	    effect = "fade",
 	    time = 500,
-	    params = {
-	        uname = username,
+	   	params = {
+	        username = username,
 	        round = 1,
 	        numObjects = 3,
 	        score = 0,
 	    }
 	}
-
+	composer.removeScene("result_scene")
 	composer.gotoScene( "game_scene", options )
 end
 
@@ -85,15 +96,12 @@ local function update_highscores(hs, score)
 	temphs = {}
 	tempunames = {}
 	local updated = 0
-	print("score is: "..score)
 	for i=1, 5, 1 do 
 		if updated == 1 then
 			temphs[i] = hs[i-1]["score"]
 			tempunames[i] = hs[i-1]["username"]
 		else
-			print("hs[i] is: "..hs[i]["score"])
-			if hs[i]["score"] ~= "--" then
-				print("score inside if: "..score)
+			if hs[i]["score"] ~= "--" and hs[i]["score"] ~= nil then
 				if score > tonumber(hs[i]["score"]) then
 					temphs[i] = score
 					if hs[i]["username"] ~= "--" then
@@ -101,11 +109,16 @@ local function update_highscores(hs, score)
 					else
 						tempunames[i] = "--"
 					end
+					new_hs = i
 					updated = 1
+				else
+					temphs[i] = hs[i]["score"]
+					tempunames[i] = hs[i]["username"]
 				end
 			else
 				temphs[i] = score
 				tempunames[i] = username
+				hew_hs = i
 				updated = 1
 			end
 		end
@@ -119,12 +132,22 @@ local function update_highscores(hs, score)
 	return hs
 end
 
+local function show_play_button()
+	-- create play again button -- 
+	local playAgain = display.newText(result_scene.view, "Play Again", display.contentCenterX, display.contentCenterY+200, native.systemFont, 44 )
+	playAgain:setFillColor( 0.82, 0.86, 1 )
+	playAgain:addEventListener( "tap", gotoGame )
+end
 
-local function show_high_scores(s, score)
+local function show_back_to_menu()
+	local back2Menu = display.newText(result_scene.view, "Menu", display.contentCenterX, display.contentCenterY+125, native.systemFont, 44 )
+	back2Menu:setFillColor( 0.82, 0.86, 1 )
+	back2Menu:addEventListener( "tap", gotoMenu )
+end
 
-	local hs = loadTable("highscores.json")
 
-	hs = update_highscores(hs, score)
+
+local function show_high_scores(s, hs)
 
 	display.remove(game_over)
 	--display.remove(final_scores)
@@ -138,37 +161,44 @@ local function show_high_scores(s, score)
 	-- display highscores -- 
 	for i=1, 5, 1 do 
 		display.newText(s, hs[i]["place"], xCenter - 120, yMin + 60 + (i*30), native.systemFont, 24)
-		display.newText(s, hs[i]["username"], xCenter, yMin + 60 + (i*30), native.systemFont, 24) 
-		display.newText(s, hs[i]["score"], xCenter + 120, yMin + 60 + (i*30), native.systemFont, 24)
+		if hs[i]["username"] ~= nil then
+			display.newText(s, hs[i]["username"], xCenter, yMin + 60 + (i*30), native.systemFont, 24) 
+		else
+			display.newText(s, "---", xCenter, yMin + 60 + (i*30), native.systemFont, 24) 
+		end
+		if hs[i]["score"] ~= nil then
+			display.newText(s, hs[i]["score"], xCenter + 120, yMin + 60 + (i*30), native.systemFont, 24)
+		end
 	end
 
-	local playAgain = display.newText(s, "Play", display.contentCenterX, display.contentCenterY+150, native.systemFont, 44 )
-	playAgain:setFillColor( 0.82, 0.86, 1 )
-	playAgain:addEventListener( "tap", gotoGame )
+	-- highlight current highscore -- 
+	if new_hs ~= 0 then
+		local highlight = display.newRect(s, xCenter, yMin + 60 + (new_hs*30), 280, 25)
+		highlight:setFillColor( 0.8, 1, 0, 0.4)
+	end
 
 end
 
 function result_scene:create( event )
 	local sceneGroup = self.view
-	-- table for game_over text options --
-	-- countdown = display.newText( sceneGroup, ""..countDownText, xCenter, yCenter, native.systemFont, 45)
 
 	local score = event.params['score']
 	username = event.params['username']
-	print("username is: "..username)
+	local hs = loadTable("highscores.json")
+
 	if score ~= nil then
 		-- game just ended
-		print("score is: "..score)
 		game_over = display.newText(sceneGroup, "GAME OVER", xCenter, yCenter, native.systemFontBold, 30) 
 		final_score = display.newText(sceneGroup, "Final Score: "..event.params['score'], xCenter, yCenter + 50, native.systemFontBold, 24)
-		local highscores = function() return show_high_scores(sceneGroup, score) end
+		hs = update_highscores(hs, score)
+		local highscores = function() return show_high_scores(sceneGroup, hs) end
 		timer.performWithDelay(3000, highscores)
+		timer.performWithDelay(3001, show_play_button)
+		timer.performWithDelay(3002, show_back_to_menu)
 	else
-		print("score is nil")
-		local highscores = function() return show_high_scores(sceneGroup, score) end
-		timer.performWithDelay(500, highscores)
+		show_high_scores(sceneGroup, hs)
+		show_back_to_menu()
 	end
-
 end
 
 -- show result_scene

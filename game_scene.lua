@@ -29,10 +29,8 @@ local click_num = 1
 local countDownText = "3"
 local round = 1
 local numObjects = 3
-print("xCenter"..xCenter)
-print("yCenter"..yCenter)
-print("xMax: "..xMax)
-print("yMax: "..yMax)
+
+
 -- Functions to transition scenes -- 
 local function gotoGame(lvl, num, score)
 	local options =
@@ -60,7 +58,7 @@ local function gotoResults()
 		     	score = score
 		    }
 		}
-	--composer.removeScene("game_scene")
+	composer.removeScene("game_scene")
 	composer.gotoScene( "result_scene", options )
 end
 
@@ -138,7 +136,9 @@ local rectHeight = 60
 local function showRects()
 	local index = 1
 	for x, y in pairs(pos) do
-		rect = display.newRect(x, y, rectWidth, rectHeight)
+		rect = display.newImageRect("galaxy.png", rectWidth, rectHeight)
+		rect.x = x
+		rect.y = y
 		rect.index = index
 		rect:addEventListener("tap", check_order)
 		table.insert(rects, rect)
@@ -195,6 +195,7 @@ local function startGame()
 	roundText = display.newText( sceneGroup, "Round "..round, xCenter, yMin, native.systemFont, 45)
 	scoreText = display.newText( sceneGroup, "Score: "..score, xCenter, yMin + 30, native.systemFont, 16)
 	grid = divideScreen(numObjects)
+	local count = 1
 	for k, v in pairs(grid) do
 		-- create positions for objects
 		-- DEBUG
@@ -206,6 +207,8 @@ local function startGame()
 		-- print("yLow is: "..(v['yMax'] - (rectHeight/2)))
 	    x = math.random(v['xMin'] + (rectWidth/2), v['xMax'] - (rectWidth/2))
     	y = math.random(v['yMin'] + (rectHeight/2), v['yMax'] - (rectHeight/2))
+    	print(count.." - x, y: "..x..", "..y)
+    	count = count + 1
 		pos[x] = y
 	end
 	showNums(sceneGroup)
@@ -230,7 +233,7 @@ function game_scene:create( event )
 	score = event.params['score']
 	username = event.params['username']
 
-	if round <= 2 then
+	if round <= 10 then
 		countdown = display.newText( sceneGroup, ""..countDownText, xCenter, yCenter, native.systemFont, 45)
 		timer.performWithDelay(1000, countDown, 3)
 	end
@@ -247,7 +250,12 @@ function game_scene:show( event )
 		-- code here runs when the scene is still off screen (but about to come on screen)
 	elseif ( phase == "did" ) then
 		-- code here runs when the scene is entirely on screen
-		if round == 3 then
+		round = event.params['round']
+		numObjects = event.params['numObjects']
+		score = event.params['score']
+		username = event.params['username']
+
+		if round == 11 then
 			gotoResults()
 		end
 	end

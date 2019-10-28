@@ -81,7 +81,7 @@ local function manageHighScores()
 end
 
 local function gotoHighScores()
-
+	scene.view:remove(1)
 	local options =
 		{
 		    effect = "crossFade",
@@ -91,6 +91,7 @@ local function gotoHighScores()
 		        score = nil,
 		    }
 		}
+	composer.removeScene( "title_scene ")
 	composer.gotoScene( "result_scene", options )
 end
 
@@ -146,7 +147,8 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local title = display.newText( sceneGroup, "Sequence", display.contentCenterX, display.contentCenterY-200, native.systemFont, 40)
+	local title = display.newText( sceneGroup, "Sequence", display.contentCenterX, display.contentCenterY-200, native.systemFont, 44)
+	title:setFillColor( 0.75, 0.78, 1 )
 	title.x = display.contentCenterX
 	title.y = display.contentCenterY -200
 
@@ -158,10 +160,10 @@ function scene:create( event )
 	unametext.isEditable = true
 	sceneGroup:insert(1, unametext)
 
-	local playButton = display.newText( sceneGroup, "Play", display.contentCenterX, display.contentCenterY+50, native.systemFont, 44 )
+	local playButton = display.newText( sceneGroup, "Play", display.contentCenterX, display.contentCenterY+100, native.systemFont, 44 )
 	playButton:setFillColor( 0.82, 0.86, 1 )
 
-	local highScoresButton = display.newText( sceneGroup, "High Scores", display.contentCenterX, display.contentCenterY+150, native.systemFont, 44 )
+	local highScoresButton = display.newText( sceneGroup, "High Scores", display.contentCenterX, display.contentCenterY+175, native.systemFont, 44 )
 	highScoresButton:setFillColor( 0.75, 0.78, 1 )
 
 	unametext:addEventListener( "userInput", textListener )
@@ -178,9 +180,15 @@ function scene:show( event )
 
 	if ( phase == "will" ) then
 		-- Code here runs when the scene is still off screen (but is about to come on screen)
-
+		local unametext = native.newTextField( display.contentCenterX, display.contentCenterY, 150, 25)
+		unametext.x = xCenter
+		unametext.y = yCenter
+		unametext.isEditable = true
+		scene.view:insert(1, unametext)
+		unametext:addEventListener( "userInput", textListener )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+
 
 	end
 end
@@ -207,6 +215,7 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+	sceneGroup:remove(1)
 
 end
 
