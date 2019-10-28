@@ -19,9 +19,5 @@ local options =
 {
     effect = "crossFade",
     time = 1200,
-    params = {
-        sampleVar1 = "my sample variable",
-        sampleVar2 = "another sample variable"
-    }
 }
 composer.gotoScene( "title_scene", options)

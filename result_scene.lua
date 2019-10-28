@@ -17,7 +17,6 @@ local xMin = 0
 local yMin = 0
 local username = ""
 local json = require("json")
-local score = 0
 
 local function gotoGame()
 local options =
@@ -82,15 +81,18 @@ function loadTable( filename )
     end
 end
 
-local function update_highscores(hs)
+local function update_highscores(hs, score)
 	temphs = {}
 	local updated = 0
+	print("score is: "..score)
 	for i=1, 5, 1 do 
 		if updated == 1 then
 			temphs[i] = hs[i-1]["score"]
 			tempunames[i] = hs[i-1]["username"]
 		else
+			print("hs[i] is: "..hs[i]["score"])
 			if hs[i]["score"] ~= "--" then
+				print("score inside if: "..score)
 				if score > tonumber(hs[i]["score"]) then
 					temphs[i] = score
 					tempunames[i] = username
@@ -113,16 +115,15 @@ local function update_highscores(hs)
 end
 
 
-local function show_high_scores(s)
+local function show_high_scores(s, score)
 
 	local hs = loadTable("highscores.json")
 
-	hs = update_highscores(hs)
+	hs = update_highscores(hs, score)
 
 	display.remove(game_over)
 	--display.remove(final_scores)
 	display.newText(s, "High Scores", xCenter, yMin + 20, native.systemFont, 32)
-
 
 	--- display header --
 	place = display.newText(s, "Place", xCenter - 110 , yMin + 60, native.systemFont, 24)
@@ -143,12 +144,11 @@ local function show_high_scores(s)
 end
 
 function result_scene:create( event )
-
 	local sceneGroup = self.view
 	-- table for game_over text options --
 	-- countdown = display.newText( sceneGroup, ""..countDownText, xCenter, yCenter, native.systemFont, 45)
-	local highscores = function() return show_high_scores(sceneGroup) end
-	score = event.params['score']
+
+	local score = event.params['score']
 	username = event.params['username']
 	
 	if score ~= nil then
@@ -156,8 +156,11 @@ function result_scene:create( event )
 		print("score is: "..score)
 		game_over = display.newText("GAME OVER", xCenter, yCenter, native.systemFontBold, 30) 
 		final_score = display.newText("Final Score: "..event.params['score'], xCenter, yCenter + 50, native.systemFontBold, 24)
+		local highscores = function() return show_high_scores(sceneGroup, score) end
 		timer.performWithDelay(3000, highscores)
 	else
+		print("score is nil")
+		local highscores = function() return show_high_scores(sceneGroup, score) end
 		timer.performWithDelay(500, highscores)
 	end
 
