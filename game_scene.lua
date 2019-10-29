@@ -11,26 +11,31 @@ local json = require("json")
 
 local game_scene = composer.newScene()
 
--- state variables updated and passed to scenes --
+-- state variables updated and passed to different scenes --
 local username = ""
 local score = 0
 
+-- game specific tables -- 
+local pos = {}			-- holds x and y positions for where numbers/sprites will be generated
+local set = {}			-- table to prevent pos[x] overwrites
+local nums = {}			-- table to hold the number objects
+local rects = {}	    -- table to hold the rectangle objects
+local soundTable = {}   -- table to hold the different sound options to play during gameplay
+
 -- game specific variables -- 
-local rects = {}
-local pos = {}
-local nums = {}
-local xCenter = display.contentCenterX
-local yCenter = display.contentCenterY
-local xMax = display.contentWidth
-local yMax = display.contentHeight
 local xMin = 0
 local yMin = 0
-local click_num = 1
-local countDownText = "3"
 local round = 1
+local click_num = 1
 local numObjects = 3
+local countDownText = "3"
+local xMax = display.contentWidth
+local yMax = display.contentHeight
+local xCenter = display.contentCenterX
+local yCenter = display.contentCenterY
 
-
+soundTable["wrong"] = audio.loadSound("wrong.mp3")
+soundTable["click"] = audio.loadSound("click.wav")
 -- Functions to transition scenes -- 
 local function gotoGame(lvl, num, score)
 	local options =
@@ -101,6 +106,7 @@ local function roundLoss()
 	removeNums()
 	display.remove(roundText)
 	display.remove(scoreText)
+	audio.play(soundTable["wrong"])
 	local X = display.newImageRect( game_scene.view, "wrong.png", 320, 480 )
 	X.x = display.contentCenterX
 	X.y = display.contentCenterY
@@ -112,6 +118,7 @@ local function check_order(event)
 		event.target:removeSelf()
 		event.target = nil
 		if click_num == numObjects then
+			audio.play(soundTable["click"])
 			score = score + numObjects
 			roundWin()
 			nextLevel = function() gotoGame(round+1, numObjects+1, score) end
@@ -205,11 +212,17 @@ local function startGame()
 		-- print("xRight is: "..(v['xMax'] - (rectWidth/2)))
 		-- print("ytop is: "..(v['yMin'] + (rectHeight/2)))
 		-- print("yLow is: "..(v['yMax'] - (rectHeight/2)))
-	    x = math.random(v['xMin'] + (rectWidth/2), v['xMax'] - (rectWidth/2))
+		x = -1
+		set[x] = true
+		while(set[x]) do 
+	    	x = math.random(v['xMin'] + (rectWidth/2), v['xMax'] - (rectWidth/2))
+	    	print("count")
+	    end
     	y = math.random(v['yMin'] + (rectHeight/2), v['yMax'] - (rectHeight/2))
     	print(count.." - x, y: "..x..", "..y)
     	count = count + 1
 		pos[x] = y
+		set[x] = true
 	end
 	showNums(sceneGroup)
 	timer.performWithDelay(700, showRects)
