@@ -122,7 +122,7 @@ function scene:create( event )
 	local title = display.newText( sceneGroup, "Sequence", display.contentCenterX, display.contentCenterY-200, native.systemFont, 44)
 	title:setFillColor( 0.75, 0.78, 1 )
 	title.x = display.contentCenterX
-	title.y = display.contentCenterY -200
+	title.y = display.contentCenterY - 175
 
 	-- Prompt the user for a user name --
 	local userText = display.newText( sceneGroup, "User: ", display.contentCenterX-100, display.contentCenterY+30, native.systemFont, 18)
