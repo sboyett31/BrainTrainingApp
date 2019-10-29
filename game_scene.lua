@@ -20,7 +20,6 @@ local pos = {}			-- holds x and y positions for where numbers/sprites will be ge
 local set = {}			-- table to prevent pos[x] overwrites
 local nums = {}			-- table to hold the number objects
 local rects = {}	    -- table to hold the rectangle objects
-local soundTable = {}   -- table to hold the different sound options to play during gameplay
 
 -- game specific variables -- 
 local xMin = 0							-- minimum x value
@@ -36,9 +35,7 @@ local yMax = display.contentHeight		-- Maximum Y value
 local xCenter = display.contentCenterX	-- Middle of the screen X value for readability / ease of typing
 local yCenter = display.contentCenterY	-- Middle of the screen Y value for readability / ease of typing
 
--- loading sound table to be used during game -- 
-soundTable["wrong"] = audio.loadSound("wrong.mp3")
-soundTable["click"] = audio.loadSound("click.wav")
+
 
 -- Functions to transition scenes -- 
 local function gotoGame(lvl, num, score)
@@ -110,6 +107,7 @@ local function roundWin()
 	removeNums()
 	display.remove(roundText)
 	display.remove(scoreText)
+	audio.play(soundTable["roundWin"])
 	local checkMark = display.newImageRect( game_scene.view, "Correct.png", 320, 480 )
 	checkMark.x = display.contentCenterX
 	checkMark.y = display.contentCenterY	
@@ -137,7 +135,7 @@ local function check_order(event)
 
 	if event.target.index == click_num then
 		-- Click number == index of sprite (correct) -- 
-		audio.play(soundTable["right"])	-- play correct click sound
+		audio.play(soundTable["ding"])	-- play correct click sound
 		event.target:removeSelf()		-- remove sprite
 		event.target = nil				-- remove sprite
 		if click_num == numObjects then	

@@ -148,12 +148,12 @@ local function show_back_to_menu()
 	back2Menu:addEventListener( "tap", gotoMenu )
 end
 
-
-
 local function show_high_scores(s, hs)
 	-- Display the highscores -- 
 
 	display.remove(game_over)  -- remove game over text
+	
+	music = audio.play(soundTable["results"], {loops=-1})
 
 	--- display header --
 	display.newText(s, "High Scores", xCenter, yMin + 20, native.systemFont, 32) 
@@ -233,6 +233,7 @@ function result_scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- code here runs immediately after the scene has dissappeared from the screen
+		audio.pause(music)	-- stop the music
 	end
 end
 
@@ -241,7 +242,9 @@ function result_scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene
+	audio.pause(music) -- stop the music
 end
+
 
 -- -------------------------------
 -- Scene event function listeners
