@@ -50,9 +50,7 @@ function loadTable( filename )
         return false
     else
         -- Read data from file
-        print("opened")
         local contents = file:read( "*a" )
-        print ("read .. "..contents)
         -- Decode JSON data into Lua table
         local t = json.decode( contents )
         -- Close the file handle
@@ -70,13 +68,10 @@ function saveTable( t, filename)
     local file, errorString = io.open( path, "w" )
     if not file then
         -- Error occurred; output the cause
-        print( "File error: " .. errorString )
         return false
     else
         -- Write encoded JSON data to file
-        print("file opened")
         file:write( json.encode( t ) )
-        print("json written")
         -- Close the file handle
         io.close( file )
         return true
@@ -89,12 +84,7 @@ local function textListener( event )
         -- User begins editing "defaultBox"
     elseif ( event.phase == "ended" or event.phase == "submitted" ) then
         -- Output resulting text from "defaultBox"
-        print( event.target.text )
     elseif ( event.phase == "editing" ) then
-        print( event.newCharacters )
-        print( event.oldText )
-        print( event.startPosition )
-        print( event.text )
         username = event.text
     end
 end
@@ -135,12 +125,12 @@ function scene:create( event )
 	title.y = display.contentCenterY -200
 
 	-- Prompt the user for a user name --
-	local userText = display.newText( sceneGroup, "User: ", display.contentCenterX-100, display.contentCenterY, native.systemFont, 18)
+	local userText = display.newText( sceneGroup, "User: ", display.contentCenterX-100, display.contentCenterY+30, native.systemFont, 18)
 
 	-- Create and display the textbox for the user to enter a user name and adds textListener event listener -- 
 	local unametext = native.newTextField( display.contentCenterX, display.contentCenterY, 150, 25)
 	unametext.x = xCenter
-	unametext.y = yCenter
+	unametext.y = yCenter + 30
 	unametext.isEditable = true
 	sceneGroup:insert(1, unametext)
 	unametext:addEventListener( "userInput", textListener )
@@ -168,7 +158,7 @@ function scene:show( event )
 		-- add username text box back to the screen -- 
 		local unametext = native.newTextField( display.contentCenterX, display.contentCenterY, 150, 25)
 		unametext.x = xCenter
-		unametext.y = yCenter
+		unametext.y = yCenter + 30
 		unametext.isEditable = true
 		scene.view:insert(1, unametext)
 		unametext:addEventListener( "userInput", textListener )
