@@ -124,7 +124,7 @@ function scene:create( event )
 	saveTable(highscores, "highscores.json")
 
 	-- create the background for the title scene -- 
-	local background = display.newImageRect( sceneGroup, "background.png", 320, 480 )
+	local background = display.newImageRect( sceneGroup, "background.png", display.contentWidth, display.contentHeight )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
