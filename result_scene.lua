@@ -119,7 +119,7 @@ local function update_highscores(hs, score)
 			else
 				temphs[i] = score
 				tempunames[i] = username
-				hew_hs = i
+				new_hs = i
 				updated = true
 			end
 		end
@@ -175,6 +175,7 @@ local function show_high_scores(s, hs)
 	end
 
 	-- highlight current highscore -- 
+	print("new_hs is: "..new_hs)
 	if new_hs ~= 0 then
 		local highlight = display.newRect(s, xCenter, yMin + 60 + (new_hs*30), 280, 25)
 		highlight:setFillColor( 0.8, 1, 0, 0.4)

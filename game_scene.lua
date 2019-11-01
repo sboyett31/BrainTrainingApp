@@ -174,14 +174,31 @@ local function showRects()
 	end
 end
 
+local function genNums()
+	-- generate random numbers for the game --
+	local rc = {}
+	local x = -1   -- dummy value to initialize while loop 
+	set[x] = true
+	for i=1, numObjects, 1 do
+		while(set[x]) do 
+    		x = math.random(1,99)
+    	end
+    	table.insert(rc, x)
+		set[x] = true   -- prevent the same value from being selected again
+	end
+	table.sort(rc)
+	return rc
+end
+
 local function showNums(s)
 	-- Display the numbers that will be covered up  -- 
 	-- By the sprites, linked through the pos table --
 	local i = 1
+	random_nums = genNums()
 	for x, y in pairs(pos) do 
-		num = display.newText(s, ""..i, x, y, native.systemFont, 25)
-		table.insert(nums, num)
+		num = display.newText(s, ""..random_nums[i], x, y, native.systemFont, 30)
 		i = i + 1
+		table.insert(nums, num)
 	end		
 end
 
